@@ -3224,7 +3224,6 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
     const thisMonth = invoices.filter(i => { const id = new Date(i.date + "T00:00:00"); return id.getMonth() === new Date().getMonth() && id.getFullYear() === new Date().getFullYear() }).length;
     const pill = (active, c) => ({ padding: "6px 16px", borderRadius: 20, border: active ? `2px solid ${c}` : "2px solid var(--border)", background: active ? `${c}14` : "transparent", color: active ? c : "var(--text-tertiary)", fontWeight: active ? 700 : 500, fontSize: ".76rem", cursor: "pointer", transition: "all .2s", fontFamily: "var(--font)", display: "inline-flex", alignItems: "center", gap: 5 });
 
-    nom
     // ═══ LIST VIEW ═══
     if (view === "list") return (<>
         <div className="page-header">
