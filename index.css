@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #FAFAF7; --bg-card: #FFFFFF; --bg-elevated: #F5F4F0; --bg-warm: #FFF8F0;
+  --bg-sidebar: #1A1814; --bg-sidebar-hover: #2A2620; --bg-sidebar-active: #3A352E;
+  --text-primary: #1A1814; --text-secondary: #6B6560; --text-tertiary: #9B9590;
+  --text-inverse: #FAFAF7; --text-sidebar: #C8C2B8; --text-sidebar-active: #FFF8F0;
+  --accent: #E85D2C; --accent-hover: #D14E20; --accent-light: #FFF0EA; --accent-glow: rgba(232,93,44,0.12);
+  --green: #2D9F6F; --green-light: #EDFAF3; --red: #D94040; --red-light: #FFF0F0;
+  --yellow: #E5A10E; --yellow-light: #FFF9EB; --blue: #3B7DD8; --blue-light: #EEF4FC;
+  --border: #E8E4DE; --border-light: #F0ECE6;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px; --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px rgba(26,24,20,0.04); --shadow-md: 0 4px 12px rgba(26,24,20,0.06);
+  --shadow-lg: 0 8px 32px rgba(26,24,20,0.08); --shadow-xl: 0 16px 48px rgba(26,24,20,0.12);
+  --font: 'Be Vietnam Pro', -apple-system, sans-serif; --font-mono: 'Space Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; } html { font-size:15px; }
+body { font-family:var(--font); background:var(--bg); color:var(--text-primary); -webkit-font-smoothing:antialiased; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes slideRight { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px);max-height:0} to{opacity:1;transform:translateY(0);max-height:500px} }
+@keyframes countUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes toastIn { from{opacity:0;transform:translateY(30px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes toastOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px) scale(0.95)} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+.fade-up{animation:fadeUp .5s ease-out both} 
+.fade-in{animation:fadeIn .4s ease-out both} 
+.slide-right{animation:slideRight .4s ease-out both}

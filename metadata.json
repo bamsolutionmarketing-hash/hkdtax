@@ -1,0 +1,7 @@
+{
+  "name": "HKD Tax 2026",
+  "description": "A comprehensive tax management application for Vietnamese household businesses (HKD), strictly following the 2026 tax regulations including TT152/2025/TT-BTC and Luật 109/2025/QH15.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
