@@ -4922,12 +4922,13 @@ function SupportPage({ addToast }) {
 // APP ROOT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function App() {
+    const [loading, setLoading] = useState(true);
     const [onboarded, setOnboarded] = useState(false);
     const [page, setPage] = useState("dashboard");
     const [showAddTx, setShowAddTx] = useState(false);
-    const [transactions, setTransactions] = useState(MOCK_TRANSACTIONS);
+    const [transactions, setTransactions] = useState([]);
     const [business, setBusiness] = useState(DEFAULT_BUSINESS);
-    const [inventory, setInventory] = useState(MOCK_INVENTORY);
+    const [inventory, setInventory] = useState([]);
     const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
     const [wallets, setWallets] = useState(DEFAULT_WALLETS);
     const [invoices, setInvoices] = useState([]);
@@ -4935,6 +4936,67 @@ export default function App() {
     const { toasts, addToast } = useToast();
     const riskFlags = useMemo(() => getRiskFlags(transactions), [transactions]);
     const unrec = useMemo(() => transactions.filter(t => !t.reconciled && t.payment_method === "bank_transfer").length, [transactions]);
+
+    // ─── Load data from Supabase on mount ────────────────────────────────
+    useEffect(() => {
+        let cancelled = false;
+        async function load() {
+            try {
+                const { loadBusinessConfig, loadCategories, loadWallets, loadTransactions, loadInventory } = await import('./lib/db');
+                const [bizData, catsData, walletsData, txData, invData] = await Promise.all([
+                    loadBusinessConfig(),
+                    loadCategories(),
+                    loadWallets(),
+                    loadTransactions(),
+                    loadInventory(),
+                ]);
+                if (cancelled) return;
+                if (bizData) {
+                    setBusiness(prev => ({ ...prev, ...bizData }));
+                    // If business has a name, consider onboarded
+                    if (bizData.name && bizData.name.trim() !== '') setOnboarded(true);
+                }
+                if (catsData && (catsData.income.length > 0 || catsData.expense.length > 0)) {
+                    setCategories(catsData);
+                }
+                if (walletsData && walletsData.length > 0) setWallets(walletsData);
+                if (txData) setTransactions(txData);
+                if (invData) setInventory(invData);
+            } catch (err) {
+                console.error('Failed to load from Supabase:', err);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+        load();
+        return () => { cancelled = true; };
+    }, []);
+
+    // ─── Persist helpers ─────────────────────────────────────────────────
+    const saveBiz = useCallback(async (updated) => {
+        setBusiness(updated);
+        const { saveBusinessConfig } = await import('./lib/db');
+        saveBusinessConfig(updated);
+    }, []);
+
+    const handleAddTx = useCallback(async (tx) => {
+        setTransactions(prev => [tx, ...prev]);
+        const { addTransaction } = await import('./lib/db');
+        const saved = await addTransaction(tx);
+        if (saved) setTransactions(prev => prev.map(t => t.id === tx.id ? saved : t));
+    }, []);
+
+    const handleUpdateTx = useCallback(async (updated) => {
+        setTransactions(prev => prev.map(t => t.id === updated.id ? updated : t));
+        const { updateTransaction } = await import('./lib/db');
+        updateTransaction(updated);
+    }, []);
+
+    const handleDeleteTx = useCallback(async (id) => {
+        setTransactions(prev => prev.filter(t => t.id !== id));
+        const { deleteTransaction } = await import('./lib/db');
+        deleteTransaction(id);
+    }, []);
 
     // Navigation handler — supports optional filter payload
     const handleNavigate = (targetPage, opts) => {
@@ -4946,34 +5008,38 @@ export default function App() {
         setPage(targetPage);
     };
 
-    const handleOnboard = (data) => {
+    const handleOnboard = async (data) => {
         const annEst = data.revenue_tier === "under_500m" ? 400000000 : data.revenue_tier === "500m_3b" ? 600000000 : 4000000000;
-        setBusiness({ ...DEFAULT_BUSINESS, ...data, annual_revenue_estimate: annEst });
+        const updated = { ...DEFAULT_BUSINESS, ...data, annual_revenue_estimate: annEst };
+        setBusiness(updated);
         setOnboarded(true);
         addToast({ type: "success", title: "Chào mừng bạn đến HKD Tax!", detail: `${data.name} — cấu hình thành công`, duration: 5000 });
+        const { saveBusinessConfig } = await import('./lib/db');
+        saveBusinessConfig(updated);
     };
 
+    if (loading) return (<><style>{STYLES}</style><div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg)" }}><div style={{ textAlign: "center" }}><div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} /><div style={{ color: "var(--text-secondary)", fontSize: ".9rem" }}>Đang tải dữ liệu...</div></div></div></>);
     if (!onboarded) return (<><style>{STYLES}</style><Onboarding onComplete={handleOnboard} /></>);
 
     return (<><style>{STYLES}</style><div className="app-shell">
         <Sidebar activePage={page} onNavigate={handleNavigate} business={business} riskCount={riskFlags.length} unreconciledCount={unrec} />
         <main className="main-content">
             {page === "dashboard" && <Dashboard transactions={transactions} business={business} onAddTx={() => setShowAddTx(true)} onNavigate={handleNavigate} />}
-            {page === "transactions" && <TransactionList transactions={transactions} onAddTx={() => setShowAddTx(true)} onUpdateTx={(updated) => setTransactions(p => p.map(t => t.id === updated.id ? updated : t))} onDeleteTx={(id) => setTransactions(p => p.filter(t => t.id !== id))} wallets={wallets} categories={categories} addToast={addToast} riskFilter={txRiskFilter} onClearRiskFilter={() => setTxRiskFilter(null)} />}
+            {page === "transactions" && <TransactionList transactions={transactions} onAddTx={() => setShowAddTx(true)} onUpdateTx={handleUpdateTx} onDeleteTx={handleDeleteTx} wallets={wallets} categories={categories} addToast={addToast} riskFilter={txRiskFilter} onClearRiskFilter={() => setTxRiskFilter(null)} />}
             {page === "inventory" && <InventoryPage inventory={inventory} setInventory={setInventory} business={business} addToast={addToast} />}
             {page === "reconcile" && <ReconcilePage transactions={transactions} setTransactions={setTransactions} bankEntries={MOCK_BANK_ENTRIES} addToast={addToast} wallets={wallets} categories={categories} business={business} />}
             {page === "tax" && <TaxPreview transactions={transactions} business={business} addToast={addToast} inventory={inventory} categories={categories} />}
             {page === "risk" && <RiskAudit transactions={transactions} onNavigate={handleNavigate} addToast={addToast} business={business} />}
-            {page === "invoice" && <InvoicePage business={business} setBusiness={setBusiness} addToast={addToast} transactions={transactions} setTransactions={setTransactions} categories={categories} wallets={wallets} invoices={invoices} setInvoices={setInvoices} />}
-            {page === "setup" && <SetupPage categories={categories} setCategories={setCategories} wallets={wallets} setWallets={setWallets} addToast={addToast} transactions={transactions} inventory={inventory} business={business} setTransactions={setTransactions} setInventory={setInventory} setBusiness={setBusiness} invoices={invoices} setInvoices={setInvoices} />}
-            {page === "settings" && <SettingsPage business={business} onUpdate={setBusiness} addToast={addToast} />}
+            {page === "invoice" && <InvoicePage business={business} setBusiness={saveBiz} addToast={addToast} transactions={transactions} setTransactions={setTransactions} categories={categories} wallets={wallets} invoices={invoices} setInvoices={setInvoices} />}
+            {page === "setup" && <SetupPage categories={categories} setCategories={setCategories} wallets={wallets} setWallets={setWallets} addToast={addToast} transactions={transactions} inventory={inventory} business={business} setTransactions={setTransactions} setInventory={setInventory} setBusiness={saveBiz} invoices={invoices} setInvoices={setInvoices} />}
+            {page === "settings" && <SettingsPage business={business} onUpdate={saveBiz} addToast={addToast} />}
             {page === "cashbook" && <CashBookPage transactions={transactions} business={business} addToast={addToast} wallets={wallets} />}
             {page === "taxcalendar" && <TaxCalendarPage business={business} addToast={addToast} />}
             {page === "support" && <SupportPage addToast={addToast} />}
         </main>
         <MobileNav activePage={page} onNavigate={handleNavigate} riskCount={riskFlags.length} />
         {page !== "dashboard" && page !== "settings" && page !== "inventory" && page !== "setup" && <button className="fab" onClick={() => setShowAddTx(true)} title="Thêm thu/chi">+</button>}
-        {showAddTx && <AddTransactionModal onClose={() => setShowAddTx(false)} onSave={tx => setTransactions([tx, ...transactions])} transactions={transactions} addToast={addToast} business={business} categories={categories} wallets={wallets} />}
+        {showAddTx && <AddTransactionModal onClose={() => setShowAddTx(false)} onSave={handleAddTx} transactions={transactions} addToast={addToast} business={business} categories={categories} wallets={wallets} />}
         <ToastContainer toasts={toasts} />
     </div></>);
 }
