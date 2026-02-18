@@ -5072,25 +5072,30 @@ export default function App() {
     useEffect(() => {
         let sub;
         (async () => {
-            const { getSession, onAuthStateChange } = await import('./lib/auth');
-            const initial = await getSession();
-            setSession(initial);
-            setAuthChecked(true);
-            sub = onAuthStateChange((s) => {
-                setSession(s);
-                if (!s) {
-                    // User signed out — reset state
-                    setLoading(true);
-                    setOnboarded(false);
-                    setTransactions([]);
-                    setBusiness(DEFAULT_BUSINESS);
-                    setInventory([]);
-                    setCategories(DEFAULT_CATEGORIES);
-                    setWallets(DEFAULT_WALLETS);
-                    setInvoices([]);
-                    setPage("dashboard");
-                }
-            });
+            try {
+                const { getSession, onAuthStateChange } = await import('./lib/auth');
+                const initial = await getSession();
+                setSession(initial);
+                setAuthChecked(true);
+                sub = onAuthStateChange((s) => {
+                    setSession(s);
+                    if (!s) {
+                        // User signed out — reset state
+                        setLoading(true);
+                        setOnboarded(false);
+                        setTransactions([]);
+                        setBusiness(DEFAULT_BUSINESS);
+                        setInventory([]);
+                        setCategories(DEFAULT_CATEGORIES);
+                        setWallets(DEFAULT_WALLETS);
+                        setInvoices([]);
+                        setPage("dashboard");
+                    }
+                });
+            } catch (err) {
+                console.error('Auth initialization failed:', err);
+                setAuthChecked(true); // Still show login screen, not infinite spinner
+            }
         })();
         return () => { if (sub) sub.unsubscribe(); };
     }, []);
