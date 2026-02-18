@@ -1000,7 +1000,7 @@ function Sidebar({ activePage, onNavigate, business, riskCount, unreconciledCoun
     return (<nav className="sidebar">
         <div className="sidebar-brand"><img src={HKDTAX_LOGO} alt="HKD Tax" style={{ width: 40, height: 40, borderRadius: "var(--radius-md)" }} /><div><div className="sidebar-brand-text">HKD Tax</div><div className="sidebar-brand-sub">Luật 2026</div></div></div>
         <div className="sidebar-section"><div className="sidebar-section-label">Quản lý</div>{nav.map(item => (<button key={item.id} className={`sidebar-item ${activePage === item.id ? "active" : ""}`} onClick={() => onNavigate(item.id)}><item.icon />{item.label}{item.badge && <span className="badge">{item.badge}</span>}</button>))}</div>
-        <div className="sidebar-section"><div className="sidebar-section-label">Hệ thống</div><button className={`sidebar-item ${activePage === "setup" ? "active" : ""}`} onClick={() => onNavigate("setup")}><Icons.Sliders />Cấu hình</button><button className={`sidebar-item ${activePage === "settings" ? "active" : ""}`} onClick={() => onNavigate("settings")}><Icons.Settings />Cài đặt thuế</button><button className={`sidebar-item ${activePage === "support" ? "active" : ""}`} onClick={() => onNavigate("support")}><Icons.HelpCircle />Hỗ trợ</button></div>
+        <div className="sidebar-section"><div className="sidebar-section-label">Hệ thống</div><button className={`sidebar-item ${activePage === "setup" ? "active" : ""}`} onClick={() => onNavigate("setup")}><Icons.Sliders />Cấu hình</button><button className={`sidebar-item ${activePage === "settings" ? "active" : ""}`} onClick={() => onNavigate("settings")}><Icons.Settings />Cài đặt thuế</button><button className={`sidebar-item ${activePage === "support" ? "active" : ""}`} onClick={() => onNavigate("support")}><Icons.HelpCircle />Hỗ trợ</button><button className="sidebar-item" onClick={async () => { const { signOut } = await import('./lib/auth'); await signOut(); }} style={{ color: 'var(--red)', marginTop: 8, opacity: .8 }}><Icons.Shield />Đăng xuất</button></div>
         {/* Profile card */}
         <div className="sidebar-business" onClick={() => onNavigate("settings")} style={{ cursor: "pointer", transition: "all .15s", borderRadius: "var(--radius-md)", padding: "16px 12px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -4919,9 +4919,141 @@ function SupportPage({ addToast }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// LOGIN SCREEN
+// ═══════════════════════════════════════════════════════════════════════════════
+function LoginScreen({ onAuth }) {
+    const [mode, setMode] = useState("login"); // login | signup | reset
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [showPw, setShowPw] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(null); setSuccess(null); setLoading(true);
+        try {
+            const { signInWithEmail, signUpWithEmail, resetPassword } = await import('./lib/auth');
+            if (mode === "login") {
+                const { error: err } = await signInWithEmail(email, password);
+                if (err) throw err;
+            } else if (mode === "signup") {
+                const { data, error: err } = await signUpWithEmail(email, password);
+                if (err) throw err;
+                // If email confirmation is required
+                if (data?.user && !data?.session) {
+                    setSuccess("Đã gửi email xác nhận! Vui lòng kiểm tra hộp thư.");
+                    setMode("login");
+                }
+            } else {
+                const { error: err } = await resetPassword(email);
+                if (err) throw err;
+                setSuccess("Đã gửi link đặt lại mật khẩu! Kiểm tra hộp thư.");
+                setMode("login");
+            }
+        } catch (err) {
+            setError(err.message || "Đã xảy ra lỗi");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loginStyles = `
+    .login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);padding:20px;}
+    .login-card{width:100%;max-width:420px;background:var(--bg-card);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);overflow:hidden;}
+    .login-header{background:var(--bg-sidebar);padding:40px 32px 32px;text-align:center;position:relative;}
+    .login-header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--yellow),var(--accent));}
+    .login-logo{width:64px;height:64px;border-radius:var(--radius-lg);margin:0 auto 16px;box-shadow:0 4px 20px rgba(232,93,44,.3);}
+    .login-title{color:var(--text-inverse);font-size:1.5rem;font-weight:700;margin-bottom:4px;}
+    .login-subtitle{color:var(--text-sidebar);font-size:.85rem;opacity:.8;}
+    .login-body{padding:32px;}
+    .login-tabs{display:flex;gap:4px;background:var(--bg-elevated);border-radius:var(--radius-md);padding:4px;margin-bottom:24px;}
+    .login-tab{flex:1;padding:10px;border:none;background:transparent;border-radius:var(--radius-sm);font-family:var(--font);font-size:.85rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .2s;}
+    .login-tab.active{background:var(--bg-card);color:var(--accent);box-shadow:var(--shadow-sm);font-weight:600;}
+    .login-field{margin-bottom:16px;}
+    .login-label{display:block;font-size:.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+    .login-input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);font-size:.95rem;background:var(--bg);color:var(--text-primary);transition:all .2s;outline:none;}
+    .login-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+    .login-input-wrap{position:relative;}
+    .login-pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:4px;font-size:1.1rem;}
+    .login-btn{width:100%;padding:14px;border:none;border-radius:var(--radius-md);background:linear-gradient(135deg,var(--accent),var(--accent-hover));color:#fff;font-family:var(--font);font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+    .login-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,93,44,.3);}
+    .login-btn:active{transform:translateY(0);}
+    .login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+    .login-btn .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px;}
+    .login-error{background:var(--red-light);color:var(--red);padding:10px 14px;border-radius:var(--radius-sm);font-size:.85rem;margin-bottom:16px;border-left:3px solid var(--red);}
+    .login-success{background:var(--green-light);color:var(--green);padding:10px 14px;border-radius:var(--radius-sm);font-size:.85rem;margin-bottom:16px;border-left:3px solid var(--green);}
+    .login-link{background:none;border:none;color:var(--accent);font-family:var(--font);font-size:.85rem;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;}
+    .login-footer{text-align:center;margin-top:16px;color:var(--text-tertiary);font-size:.8rem;}
+    `;
+
+    return (<><style>{STYLES}{loginStyles}</style>
+        <div className="login-container">
+            <div className="login-card">
+                <div className="login-header">
+                    <img src={HKDTAX_LOGO} alt="HKD Tax" className="login-logo" />
+                    <div className="login-title">HKD Tax 2026</div>
+                    <div className="login-subtitle">Quản lý thuế Hộ Kinh Doanh</div>
+                </div>
+                <div className="login-body">
+                    {mode !== "reset" && (
+                        <div className="login-tabs">
+                            <button className={`login-tab ${mode === "login" ? "active" : ""}`} onClick={() => { setMode("login"); setError(null); setSuccess(null); }}>Đăng nhập</button>
+                            <button className={`login-tab ${mode === "signup" ? "active" : ""}`} onClick={() => { setMode("signup"); setError(null); setSuccess(null); }}>Đăng ký</button>
+                        </div>
+                    )}
+                    {mode === "reset" && (
+                        <div style={{ marginBottom: 20 }}>
+                            <button className="login-link" onClick={() => { setMode("login"); setError(null); setSuccess(null); }}>← Quay lại đăng nhập</button>
+                            <div style={{ fontSize: ".9rem", color: "var(--text-secondary)", marginTop: 12 }}>Nhập email để nhận link đặt lại mật khẩu</div>
+                        </div>
+                    )}
+                    {error && <div className="login-error">{error}</div>}
+                    {success && <div className="login-success">{success}</div>}
+                    <form onSubmit={handleSubmit}>
+                        <div className="login-field">
+                            <label className="login-label">Email</label>
+                            <input className="login-input" type="email" placeholder="email@example.com" value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
+                        </div>
+                        {mode !== "reset" && (
+                            <div className="login-field">
+                                <label className="login-label">Mật khẩu</label>
+                                <div className="login-input-wrap">
+                                    <input className="login-input" type={showPw ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} style={{ paddingRight: 44 }} />
+                                    <button type="button" className="login-pw-toggle" onClick={() => setShowPw(!showPw)}>{showPw ? "🙈" : "👁️"}</button>
+                                </div>
+                            </div>
+                        )}
+                        {mode === "login" && (
+                            <div style={{ textAlign: "right", marginBottom: 16 }}>
+                                <button type="button" className="login-link" onClick={() => { setMode("reset"); setError(null); setSuccess(null); }}>Quên mật khẩu?</button>
+                            </div>
+                        )}
+                        <button className="login-btn" type="submit" disabled={loading}>
+                            {loading && <span className="spinner" />}
+                            {mode === "login" ? "Đăng nhập" : mode === "signup" ? "Đăng ký" : "Gửi link đặt lại"}
+                        </button>
+                    </form>
+                    <div className="login-footer">
+                        {mode === "login" ? (
+                            <>Chưa có tài khoản? <button className="login-link" onClick={() => { setMode("signup"); setError(null); }}>Đăng ký ngay</button></>
+                        ) : mode === "signup" ? (
+                            <>Đã có tài khoản? <button className="login-link" onClick={() => { setMode("login"); setError(null); }}>Đăng nhập</button></>
+                        ) : null}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // APP ROOT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function App() {
+    const [session, setSession] = useState(null);
+    const [authChecked, setAuthChecked] = useState(false);
     const [loading, setLoading] = useState(true);
     const [onboarded, setOnboarded] = useState(false);
     const [page, setPage] = useState("dashboard");
@@ -4937,12 +5069,42 @@ export default function App() {
     const riskFlags = useMemo(() => getRiskFlags(transactions), [transactions]);
     const unrec = useMemo(() => transactions.filter(t => !t.reconciled && t.payment_method === "bank_transfer").length, [transactions]);
 
-    // ─── Load data from Supabase on mount ────────────────────────────────
+    // ─── Auth state listener ─────────────────────────────────────────────
     useEffect(() => {
+        let sub;
+        (async () => {
+            const { getSession, onAuthStateChange } = await import('./lib/auth');
+            const initial = await getSession();
+            setSession(initial);
+            setAuthChecked(true);
+            sub = onAuthStateChange((s) => {
+                setSession(s);
+                if (!s) {
+                    // User signed out — reset state
+                    setLoading(true);
+                    setOnboarded(false);
+                    setTransactions([]);
+                    setBusiness(DEFAULT_BUSINESS);
+                    setInventory([]);
+                    setCategories(DEFAULT_CATEGORIES);
+                    setWallets(DEFAULT_WALLETS);
+                    setInvoices([]);
+                    setPage("dashboard");
+                }
+            });
+        })();
+        return () => { if (sub) sub.unsubscribe(); };
+    }, []);
+
+    // ─── Load data from Supabase after auth ──────────────────────────────
+    useEffect(() => {
+        if (!session) return;
         let cancelled = false;
         async function load() {
             try {
-                const { loadBusinessConfig, loadCategories, loadWallets, loadTransactions, loadInventory } = await import('./lib/db');
+                const { loadBusinessConfig, loadCategories, loadWallets, loadTransactions, loadInventory, seedDefaultsForUser } = await import('./lib/db');
+                // Seed defaults for new users
+                await seedDefaultsForUser(session.user.id);
                 const [bizData, catsData, walletsData, txData, invData] = await Promise.all([
                     loadBusinessConfig(),
                     loadCategories(),
@@ -4953,7 +5115,6 @@ export default function App() {
                 if (cancelled) return;
                 if (bizData) {
                     setBusiness(prev => ({ ...prev, ...bizData }));
-                    // If business has a name, consider onboarded
                     if (bizData.name && bizData.name.trim() !== '') setOnboarded(true);
                 }
                 if (catsData && (catsData.income.length > 0 || catsData.expense.length > 0)) {
@@ -4968,9 +5129,10 @@ export default function App() {
                 if (!cancelled) setLoading(false);
             }
         }
+        setLoading(true);
         load();
         return () => { cancelled = true; };
-    }, []);
+    }, [session]);
 
     // ─── Persist helpers ─────────────────────────────────────────────────
     const saveBiz = useCallback(async (updated) => {
@@ -5018,6 +5180,9 @@ export default function App() {
         saveBusinessConfig(updated);
     };
 
+    // ─── Auth gate ────────────────────────────────────────────────────────
+    if (!authChecked) return (<><style>{STYLES}</style><div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg)" }}><div style={{ textAlign: "center" }}><div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} /><div style={{ color: "var(--text-secondary)", fontSize: ".9rem" }}>Đang khởi tạo...</div></div></div></>);
+    if (!session) return (<LoginScreen />);
     if (loading) return (<><style>{STYLES}</style><div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg)" }}><div style={{ textAlign: "center" }}><div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} /><div style={{ color: "var(--text-secondary)", fontSize: ".9rem" }}>Đang tải dữ liệu...</div></div></div></>);
     if (!onboarded) return (<><style>{STYLES}</style><Onboarding onComplete={handleOnboard} /></>);
 
