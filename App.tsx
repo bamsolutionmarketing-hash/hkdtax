@@ -1448,6 +1448,7 @@ function AddTransactionModal({ onClose, onSave, transactions, addToast, business
     const [showDup, setShowDup] = useState(false); const [errors, setErrors] = useState({});
     const [compressing, setCompressing] = useState(false);
     const fileRef = useRef(null);
+    const cameraRef = useRef(null);
     const cats = form.type === "income" ? categories.income : categories.expense;
     const suggestions = getSmartSuggestions(transactions, form.type, categories);
     const validate = () => { const e = {}; if (!form.amount) e.amount = "Vui lòng nhập số tiền"; if (!form.description.trim()) e.description = "Vui lòng nhập mô tả"; if (!form.category_id) e.category_id = "Chọn danh mục"; setErrors(e); return !Object.keys(e).length };
@@ -1482,6 +1483,7 @@ function AddTransactionModal({ onClose, onSave, transactions, addToast, business
         }
         setCompressing(false);
         if (fileRef.current) fileRef.current.value = "";
+        if (cameraRef.current) cameraRef.current.value = "";
     };
 
     return (<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e => e.stopPropagation()}>
@@ -1542,18 +1544,27 @@ function AddTransactionModal({ onClose, onSave, transactions, addToast, business
                                     <button className="btn btn-secondary" style={{ padding: "6px 10px", fontSize: ".72rem", flexShrink: 0 }} onClick={() => setForm({ ...form, invoice_img: null, invoice_thumb: null, _imgInfo: null })}><Icons.Trash /> Xóa</button>
                                 </div>
                             </div>
+                        ) : compressing ? (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "20px", border: "2px dashed var(--border)", borderRadius: "var(--radius-md)", background: "var(--bg-card)" }}>
+                                <div style={{ width: 24, height: 24, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin .6s linear infinite" }} />
+                                <span style={{ fontSize: ".82rem", color: "var(--accent)", fontWeight: 600 }}>Đang nén ảnh...</span>
+                            </div>
                         ) : (
-                            <div onClick={() => fileRef.current?.click()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "20px", border: "2px dashed var(--border)", borderRadius: "var(--radius-md)", cursor: "pointer", transition: "all .15s", background: "var(--bg-card)" }}>
-                                {compressing ? (
-                                    <><div style={{ width: 24, height: 24, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin .6s linear infinite" }} />
-                                        <span style={{ fontSize: ".82rem", color: "var(--accent)", fontWeight: 600 }}>Đang nén ảnh...</span></>
-                                ) : (
-                                    <><Icons.Camera /><span style={{ fontSize: ".82rem", color: "var(--text-secondary)" }}>Chụp hoặc chọn ảnh hóa đơn</span>
-                                        <span style={{ fontSize: ".68rem", color: "var(--text-tertiary)" }}>WebP ưu tiên · nén ≤40KB · chữ vẫn đọc được</span></>
-                                )}
+                            <div style={{ display: "flex", gap: 10 }}>
+                                <button type="button" onClick={() => cameraRef.current?.click()} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", border: "2px dashed var(--border)", borderRadius: "var(--radius-md)", cursor: "pointer", background: "var(--bg-card)", transition: "all .15s" }}>
+                                    <span style={{ fontSize: "1.4rem" }}>📷</span>
+                                    <span style={{ fontSize: ".78rem", fontWeight: 600, color: "var(--text-primary)" }}>Chụp ảnh</span>
+                                    <span style={{ fontSize: ".62rem", color: "var(--text-tertiary)" }}>Camera</span>
+                                </button>
+                                <button type="button" onClick={() => fileRef.current?.click()} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", border: "2px dashed var(--border)", borderRadius: "var(--radius-md)", cursor: "pointer", background: "var(--bg-card)", transition: "all .15s" }}>
+                                    <span style={{ fontSize: "1.4rem" }}>📁</span>
+                                    <span style={{ fontSize: ".78rem", fontWeight: 600, color: "var(--text-primary)" }}>Chọn ảnh</span>
+                                    <span style={{ fontSize: ".62rem", color: "var(--text-tertiary)" }}>Thư viện</span>
+                                </button>
                             </div>
                         )}
-                        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: "none" }} />
+                        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: "none" }} />
+                        <input ref={fileRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
                     </div>
                 </div>
             )}
