@@ -14,7 +14,7 @@ interface InventoryProps {
 const InventoryPage: React.FC<InventoryProps> = ({ inventory, setInventory, business, addToast }) => {
     const [selected, setSelected] = useState<string | null>(inventory[0]?.id || null);
     const [showAdd, setShowAdd] = useState(false);
-    
+
     const activeItem = inventory.find(i => i.id === selected);
     const results = activeItem ? calcInventory(activeItem) : null;
 
@@ -37,24 +37,24 @@ const InventoryPage: React.FC<InventoryProps> = ({ inventory, setInventory, busi
     };
 
     return (
-        <div className="p-6 lg:p-10 fade-up space-y-8">
-            <div className="flex justify-between items-center">
+        <div className="px-3 py-4 sm:p-6 lg:p-10 fade-up space-y-6 sm:space-y-8 overflow-x-hidden">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div>
-                    <h1 className="text-3xl font-extrabold">Kho hàng (S2d)</h1>
-                    <p className="text-[#6B6560]">Quản lý nhập xuất tồn theo TT152/2025</p>
+                    <h1 className="text-xl sm:text-3xl font-extrabold">Kho hàng (S2d)</h1>
+                    <p className="text-[#6B6560] text-xs sm:text-base">Quản lý nhập xuất tồn theo TT152/2025</p>
                 </div>
-                <button onClick={addItem} className="bg-[#1A1814] text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2">
+                <button onClick={addItem} className="bg-[#1A1814] text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm self-start sm:self-auto">
                     <Icons.Plus /> Thêm hàng hóa
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Sidebar list */}
-                <div className="lg:col-span-1 space-y-2">
+            <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-8">
+                {/* Sidebar list — horizontal scroll on mobile */}
+                <div className="lg:col-span-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
                     {inventory.map(item => {
                         const { endQty } = calcInventory(item);
                         return (
-                            <button key={item.id} onClick={() => setSelected(item.id)} className={`w-full p-4 rounded-xl border-2 text-left transition-all ${selected === item.id ? 'border-[#E85D2C] bg-[#FFF0EA]' : 'border-[#E8E4DE] bg-white'}`}>
+                            <button key={item.id} onClick={() => setSelected(item.id)} className={`flex-shrink-0 lg:flex-shrink lg:w-full p-3 lg:p-4 rounded-xl border-2 text-left transition-all ${selected === item.id ? 'border-[#E85D2C] bg-[#FFF0EA]' : 'border-[#E8E4DE] bg-white'}`}>
                                 <div className="font-bold text-sm truncate">{item.name}</div>
                                 <div className="text-xs text-[#9B9590] mt-1">Tồn: <span className="font-bold text-[#E85D2C]">{endQty} {item.unit}</span></div>
                             </button>
@@ -139,7 +139,7 @@ const InventoryPage: React.FC<InventoryProps> = ({ inventory, setInventory, busi
                                 const q = Number((document.getElementById('qty') as HTMLInputElement).value);
                                 const p = Number((document.getElementById('price') as HTMLInputElement).value);
                                 const t = (document.getElementById('type') as HTMLSelectElement).value as 'in' | 'out';
-                                
+
                                 setInventory(prev => prev.map(it => it.id === activeItem.id ? {
                                     ...it,
                                     movements: [...it.movements, { id: Date.now().toString(), date: new Date().toISOString().split('T')[0], type: t, doc: 'HD' + Date.now().toString().slice(-4), desc: t === 'in' ? 'Nhập hàng' : 'Xuất dùng', qty: q, price: p }]

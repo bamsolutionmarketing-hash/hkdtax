@@ -5,32 +5,32 @@ import { computeTax2026, fmtVND } from '../utils';
 import { Icons, S2C_GROUPS, VAT_GROUPS } from '../constants';
 
 interface TaxPreviewProps {
-  transactions: Transaction[];
-  business: BusinessConfig;
-  addToast: (t: any) => void;
-  categories: any;
-  inventory: InventoryItem[];
+    transactions: Transaction[];
+    business: BusinessConfig;
+    addToast: (t: any) => void;
+    categories: any;
+    inventory: InventoryItem[];
 }
 
 const TaxPreview: React.FC<TaxPreviewProps> = ({ transactions, business, addToast, categories, inventory }) => {
     const tax = useMemo(() => computeTax2026(transactions, business), [transactions, business]);
-    
+
     return (
-        <div className="p-6 lg:p-10 fade-up space-y-8">
+        <div className="px-3 py-4 sm:p-6 lg:p-10 fade-up space-y-6 sm:space-y-8 overflow-x-hidden">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight">Thuế & Báo cáo</h1>
-                    <p className="text-[#6B6560] mt-1">Căn cứ TT152/2025/TT-BTC & Luật 109/2025/QH15</p>
+                    <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight">Thuế & Báo cáo</h1>
+                    <p className="text-[#6B6560] mt-1 text-xs sm:text-base">Căn cứ TT152/2025/TT-BTC & Luật 109/2025/QH15</p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
                 {/* Summary Table */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-3xl border border-[#E8E4DE] p-8 shadow-sm space-y-8">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#E8E4DE] p-4 sm:p-8 shadow-sm space-y-6 sm:space-y-8">
                         <div className="flex justify-between items-end border-b-2 border-[#F0ECE6] pb-4">
                             <div>
-                                <h3 className="font-black text-xl text-[#1A1814]">Tờ khai tạm tính Q1/2026</h3>
+                                <h3 className="font-black text-base sm:text-xl text-[#1A1814]">Tờ khai tạm tính Q1/2026</h3>
                                 <p className="text-xs text-[#9B9590] uppercase tracking-widest font-bold mt-1">Hộ kinh doanh: {business.name}</p>
                             </div>
                             <div className="text-right">
@@ -45,9 +45,9 @@ const TaxPreview: React.FC<TaxPreviewProps> = ({ transactions, business, addToas
                             <div className="h-px bg-[#F0ECE6] my-4" />
                             <TaxRow label="Thuế GTGT phải nộp" value={tax.isUnderGate ? "Miễn" : fmtVND(tax.totalVat)} color="text-[#E85D2C]" />
                             <TaxRow label="Thuế TNCN kinh doanh" value={tax.isUnderGate ? "Miễn" : fmtVND(tax.pit)} color="text-[#3B7DD8]" />
-                            <div className="bg-[#1A1814] text-white p-6 rounded-2xl flex justify-between items-center mt-6">
-                                <span className="font-bold text-lg">Tổng cộng</span>
-                                <span className="text-2xl font-black text-[#E85D2C]">{tax.isUnderGate ? '0đ' : fmtVND(tax.totalTax)}</span>
+                            <div className="bg-[#1A1814] text-white p-4 sm:p-6 rounded-2xl flex justify-between items-center mt-6">
+                                <span className="font-bold text-sm sm:text-lg">Tổng cộng</span>
+                                <span className="text-lg sm:text-2xl font-black text-[#E85D2C]">{tax.isUnderGate ? '0đ' : fmtVND(tax.totalTax)}</span>
                             </div>
                         </div>
                     </div>
@@ -77,7 +77,7 @@ const TaxPreview: React.FC<TaxPreviewProps> = ({ transactions, business, addToas
 
                     <div className="bg-white border border-[#E8E4DE] p-6 rounded-3xl space-y-4 shadow-sm">
                         <h4 className="font-black text-xs text-[#9B9590] uppercase tracking-widest">Xuất báo cáo</h4>
-                        <button onClick={() => addToast({type:'success', title: 'Đang khởi tạo File...', detail:'Dữ liệu đang được kết xuất ra XLSX'})} className="w-full bg-[#3B7DD8] text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                        <button onClick={() => addToast({ type: 'success', title: 'Đang khởi tạo File...', detail: 'Dữ liệu đang được kết xuất ra XLSX' })} className="w-full bg-[#3B7DD8] text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
                             <Icons.Download /> Tải File Excel (XLSX)
                         </button>
                         <button className="w-full border-2 border-[#E8E4DE] py-3 rounded-xl font-bold hover:bg-[#F5F4F0] transition-colors">
