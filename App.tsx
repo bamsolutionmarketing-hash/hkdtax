@@ -939,17 +939,31 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-primary);
 .ledger-export-btn svg{width:14px;height:14px}
 .ledger-disabled{opacity:.45;pointer-events:none}
 
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);z-index:100;padding:6px 0 env(safe-area-inset-bottom,6px)}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);z-index:100;padding:4px 0 env(safe-area-inset-bottom,4px);box-shadow:0 -2px 12px rgba(0,0,0,.06)}
 .mobile-nav-items{display:flex;justify-content:space-around}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 12px;border:none;background:none;font-family:var(--font);font-size:.62rem;color:var(--text-tertiary);cursor:pointer;transition:color .15s;position:relative}
-.mobile-nav-item.active{color:var(--accent)} .mobile-nav-item svg{width:22px;height:22px}
-.mobile-nav-item .nav-badge{position:absolute;top:2px;right:4px;background:var(--accent);color:white;font-size:.55rem;font-weight:700;padding:1px 5px;border-radius:var(--radius-full)}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 4px;border:none;background:none;font-family:var(--font);font-size:.58rem;color:var(--text-tertiary);cursor:pointer;transition:color .15s;position:relative;min-width:0;max-width:72px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;letter-spacing:-.01em}
+.mobile-nav-item.active{color:var(--accent);font-weight:600} .mobile-nav-item svg{width:20px;height:20px;flex-shrink:0}
+.mobile-nav-item .nav-badge{position:absolute;top:0;right:0;background:var(--accent);color:white;font-size:.5rem;font-weight:700;padding:1px 4px;border-radius:var(--radius-full);min-width:14px;text-align:center}
+
+.mobile-more-overlay{position:fixed;inset:0;background:rgba(26,24,20,.45);backdrop-filter:blur(3px);z-index:150;animation:fadeIn .2s ease-out}
+.mobile-more-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:151;padding:0 0 env(safe-area-inset-bottom,12px);max-height:75vh;overflow-y:auto;animation:mobileDrawerUp .25s ease-out;box-shadow:0 -8px 40px rgba(0,0,0,.15)}
+@keyframes mobileDrawerUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mobile-more-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 6px}
+.mobile-more-title{font-size:.82rem;font-weight:700;color:var(--text-secondary);padding:4px 20px 10px;letter-spacing:-.01em}
+.mobile-more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:0 12px 12px}
+.mobile-more-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border:none;background:none;font-family:var(--font);font-size:.68rem;color:var(--text-secondary);cursor:pointer;border-radius:var(--radius-md);transition:all .12s;position:relative}
+.mobile-more-item:hover,.mobile-more-item:active{background:var(--bg-elevated);color:var(--text-primary)}
+.mobile-more-item.active{color:var(--accent);background:var(--accent-light)}
+.mobile-more-item svg{width:22px;height:22px}
+.mobile-more-item .nav-badge{position:absolute;top:4px;right:8px;background:var(--accent);color:white;font-size:.5rem;font-weight:700;padding:1px 4px;border-radius:var(--radius-full)}
+.mobile-more-divider{height:1px;background:var(--border-light);margin:4px 16px 8px}
+.mobile-more-item.danger{color:var(--red)}
 
 .duplicate-warning{background:var(--yellow-light);border:1px solid rgba(229,161,14,.3);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start;animation:slideDown .3s ease-out}
 
 ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:80px}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr)}.page-header,.page-body{padding-left:16px;padding-right:16px}.fab{bottom:80px;right:20px;width:54px;height:54px;font-size:24px}.balance-row{grid-template-columns:1fr}}
-@media(max-width:600px){.stat-grid{grid-template-columns:1fr 1fr;gap:10px}.stat-card{padding:14px 16px}.stat-value{font-size:1.15rem}}
+@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:72px}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr)}.page-header,.page-body{padding-left:14px;padding-right:14px}.page-title{font-size:1.25rem}.page-subtitle{font-size:.78rem}.fab{bottom:80px;right:16px;width:50px;height:50px;font-size:22px}.balance-row{grid-template-columns:1fr}.card-header{padding:14px 16px}.card-body{padding:16px}.card-title{font-size:.88rem}.tx-item{padding:12px 14px;gap:10px}.tx-icon{width:36px;height:36px;font-size:1rem}.tx-amount{font-size:.85rem}.tx-badges{display:none}.filter-bar{padding:10px 14px;gap:6px}.modal{width:min(560px,96vw)}.modal-body{padding:0 18px 20px}.modal-header{padding:18px 18px 12px}}
+@media(max-width:600px){html{font-size:14px}.stat-grid{grid-template-columns:1fr 1fr;gap:8px}.stat-card{padding:12px 14px}.stat-value{font-size:1.05rem;word-break:break-all}.stat-label{font-size:.68rem}.stat-sub{font-size:.65rem}.page-title{font-size:1.15rem}.balance-card{padding:12px 14px;gap:10px}.balance-icon{width:36px;height:36px;font-size:1.1rem}.alert-strip{font-size:.78rem;padding:10px 14px}.filter-search{min-width:120px}.field-row{grid-template-columns:1fr}.cat-grid{grid-template-columns:repeat(3,1fr)}}
 `;
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
@@ -1016,9 +1030,61 @@ function Sidebar({ activePage, onNavigate, business, riskCount, unreconciledCoun
         </div>
     </nav>);
 }
-function MobileNav({ activePage, onNavigate, riskCount }) {
-    const items = [{ id: "dashboard", label: "Tổng quan", icon: Icons.Home }, { id: "transactions", label: "Thu chi", icon: Icons.List }, { id: "cashbook", label: "Sổ tiền", icon: Icons.Wallet }, { id: "tax", label: "Thuế", icon: Icons.Tax }, { id: "taxcalendar", label: "Lịch thuế", icon: Icons.Calendar }];
-    return (<div className="mobile-nav"><div className="mobile-nav-items">{items.map(i => (<button key={i.id} className={`mobile-nav-item ${activePage === i.id ? "active" : ""}`} onClick={() => onNavigate(i.id)}><i.icon />{i.badge > 0 && <span className="nav-badge">{i.badge}</span>}{i.label}</button>))}</div></div>);
+function MobileNav({ activePage, onNavigate, riskCount, unreconciledCount, business }) {
+    const [showMore, setShowMore] = useState(false);
+    const primaryItems = [
+        { id: "dashboard", label: "Tổng quan", icon: Icons.Home },
+        { id: "transactions", label: "Thu chi", icon: Icons.List },
+        { id: "invoice", label: "Hóa đơn", icon: Icons.FileText },
+        { id: "tax", label: "Thuế", icon: Icons.Tax },
+    ];
+    const moreItems = [
+        { id: "cashbook", label: "Sổ tiền", icon: Icons.Wallet },
+        { id: "inventory", label: "Tồn kho", icon: Icons.Package },
+        { id: "reconcile", label: "Đối soát NH", icon: Icons.Bank, badge: unreconciledCount || null },
+        { id: "taxcalendar", label: "Lịch thuế", icon: Icons.Calendar },
+        { id: "risk", label: "Rủi ro", icon: Icons.Shield, badge: riskCount || null },
+        { id: "setup", label: "Cấu hình", icon: Icons.Sliders },
+        { id: "settings", label: "Cài đặt thuế", icon: Icons.Settings },
+        { id: "support", label: "Hỗ trợ", icon: Icons.HelpCircle },
+    ];
+    const isMoreActive = moreItems.some(i => i.id === activePage);
+    const handleNav = (id) => { onNavigate(id); setShowMore(false); };
+    return (<>
+        <div className="mobile-nav">
+            <div className="mobile-nav-items">
+                {primaryItems.map(i => (
+                    <button key={i.id} className={`mobile-nav-item ${activePage === i.id ? "active" : ""}`} onClick={() => handleNav(i.id)}>
+                        <i.icon />{i.label}
+                    </button>
+                ))}
+                <button className={`mobile-nav-item ${isMoreActive || showMore ? "active" : ""}`} onClick={() => setShowMore(v => !v)}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
+                    Thêm
+                </button>
+            </div>
+        </div>
+        {showMore && (<>
+            <div className="mobile-more-overlay" onClick={() => setShowMore(false)} />
+            <div className="mobile-more-drawer">
+                <div className="mobile-more-handle" />
+                <div className="mobile-more-title">Tất cả chức năng</div>
+                <div className="mobile-more-grid">
+                    {moreItems.map(i => (
+                        <button key={i.id} className={`mobile-more-item ${activePage === i.id ? "active" : ""}`} onClick={() => handleNav(i.id)}>
+                            <i.icon />{i.badge > 0 && <span className="nav-badge">{i.badge}</span>}{i.label}
+                        </button>
+                    ))}
+                </div>
+                <div className="mobile-more-divider" />
+                <div className="mobile-more-grid">
+                    <button className="mobile-more-item danger" onClick={async () => { const { signOut } = await import('./lib/auth'); await signOut(); }}>
+                        <Icons.Shield />Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </>)}
+    </>);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -5206,7 +5272,7 @@ export default function App() {
             {page === "taxcalendar" && <TaxCalendarPage business={business} addToast={addToast} />}
             {page === "support" && <SupportPage addToast={addToast} />}
         </main>
-        <MobileNav activePage={page} onNavigate={handleNavigate} riskCount={riskFlags.length} />
+        <MobileNav activePage={page} onNavigate={handleNavigate} riskCount={riskFlags.length} unreconciledCount={unrec} business={business} />
         {page !== "dashboard" && page !== "settings" && page !== "inventory" && page !== "setup" && <button className="fab" onClick={() => setShowAddTx(true)} title="Thêm thu/chi">+</button>}
         {showAddTx && <AddTransactionModal onClose={() => setShowAddTx(false)} onSave={handleAddTx} transactions={transactions} addToast={addToast} business={business} categories={categories} wallets={wallets} />}
         <ToastContainer toasts={toasts} />
