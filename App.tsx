@@ -962,7 +962,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-primary);
 .duplicate-warning{background:var(--yellow-light);border:1px solid rgba(229,161,14,.3);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start;animation:slideDown .3s ease-out}
 
 ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:72px;overflow-x:hidden;max-width:100vw}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{min-width:0;overflow:hidden}.page-header,.page-body{padding-left:14px;padding-right:14px;overflow-x:hidden;max-width:100%}.page-title{font-size:1.25rem}.page-subtitle{font-size:.78rem}.fab{bottom:80px;right:16px;width:50px;height:50px;font-size:22px}.balance-row{grid-template-columns:1fr}.card{min-width:0;overflow:hidden;max-width:100%}.card-header{padding:14px 16px;flex-direction:column;gap:8px}.card-body{padding:16px;overflow-x:auto}.card-title{font-size:.88rem}.tx-item{padding:12px 14px;gap:10px}.tx-icon{width:36px;height:36px;font-size:1rem}.tx-amount{font-size:.85rem}.tx-badges{display:none}.filter-bar{padding:10px 14px;gap:6px}.modal{width:min(560px,96vw)}.modal-body{padding:0 18px 20px}.modal-header{padding:18px 18px 12px}.risk-top-grid{grid-template-columns:1fr!important}.risk-stats-grid{grid-template-columns:1fr 1fr!important}.risk-flag{flex-wrap:wrap;gap:8px}.inv-grid{grid-template-columns:1fr!important}}
+@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:72px;overflow-x:hidden;max-width:100vw}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{min-width:0;overflow:hidden}.page-header,.page-body{padding-left:14px;padding-right:14px;overflow-x:hidden;max-width:100%}.page-title{font-size:1.25rem}.page-subtitle{font-size:.78rem}.fab{bottom:80px;right:16px;width:50px;height:50px;font-size:22px}.balance-row{grid-template-columns:1fr}.card{min-width:0;overflow:hidden;max-width:100%}.card-header{padding:14px 16px;flex-direction:column;gap:8px}.card-body{padding:16px;overflow-x:auto}.card-title{font-size:.88rem}.tx-item{padding:12px 14px;gap:10px}.tx-icon{width:36px;height:36px;font-size:1rem}.tx-amount{font-size:.85rem}.tx-badges{display:none}.filter-bar{padding:10px 14px;gap:6px}.modal{width:min(560px,96vw)}.modal-body{padding:0 18px 20px}.modal-header{padding:18px 18px 12px}.risk-top-grid{grid-template-columns:1fr!important}.risk-stats-grid{grid-template-columns:1fr 1fr!important}.risk-flag{flex-wrap:wrap;gap:8px}.inv-grid{grid-template-columns:1fr!important}.inv-create-grid{grid-template-columns:1fr!important}.inv-item-header{display:none!important}.inv-item-row{display:flex!important;flex-direction:column!important;gap:8px!important}.inv-item-row input{width:100%!important}}
 @media(max-width:600px){html{font-size:14px}.stat-grid{grid-template-columns:1fr 1fr;gap:6px}.stat-card{padding:10px 12px}.stat-value{font-size:.95rem;word-break:break-all;overflow:hidden;text-overflow:ellipsis}.stat-label{font-size:.65rem}.stat-sub{font-size:.6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.page-title{font-size:1.15rem}.page-header{gap:8px;flex-wrap:wrap}.balance-card{padding:12px 14px;gap:10px}.balance-icon{width:36px;height:36px;font-size:1.1rem}.alert-strip{font-size:.78rem;padding:10px 14px}.filter-search{min-width:120px}.field-row{grid-template-columns:1fr}.cat-grid{grid-template-columns:repeat(3,1fr)}.card-header{flex-direction:column;align-items:flex-start;gap:6px}}
 `;
 
@@ -1448,7 +1448,7 @@ function AddTransactionModal({ onClose, onSave, transactions, addToast, business
     const [showDup, setShowDup] = useState(false); const [errors, setErrors] = useState({});
     const [compressing, setCompressing] = useState(false);
     const fileRef = useRef(null);
-    const cameraRef = useRef(null);
+
     const cats = form.type === "income" ? categories.income : categories.expense;
     const suggestions = getSmartSuggestions(transactions, form.type, categories);
     const validate = () => { const e = {}; if (!form.amount) e.amount = "Vui lòng nhập số tiền"; if (!form.description.trim()) e.description = "Vui lòng nhập mô tả"; if (!form.category_id) e.category_id = "Chọn danh mục"; setErrors(e); return !Object.keys(e).length };
@@ -1483,7 +1483,7 @@ function AddTransactionModal({ onClose, onSave, transactions, addToast, business
         }
         setCompressing(false);
         if (fileRef.current) fileRef.current.value = "";
-        if (cameraRef.current) cameraRef.current.value = "";
+
     };
 
     return (<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e => e.stopPropagation()}>
@@ -1550,20 +1550,13 @@ function AddTransactionModal({ onClose, onSave, transactions, addToast, business
                                 <span style={{ fontSize: ".82rem", color: "var(--accent)", fontWeight: 600 }}>Đang nén ảnh...</span>
                             </div>
                         ) : (
-                            <div style={{ display: "flex", gap: 10 }}>
-                                <button type="button" onClick={() => cameraRef.current?.click()} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", border: "2px dashed var(--border)", borderRadius: "var(--radius-md)", cursor: "pointer", background: "var(--bg-card)", transition: "all .15s" }}>
-                                    <span style={{ fontSize: "1.4rem" }}>📷</span>
-                                    <span style={{ fontSize: ".78rem", fontWeight: 600, color: "var(--text-primary)" }}>Chụp ảnh</span>
-                                    <span style={{ fontSize: ".62rem", color: "var(--text-tertiary)" }}>Camera</span>
-                                </button>
-                                <button type="button" onClick={() => fileRef.current?.click()} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", border: "2px dashed var(--border)", borderRadius: "var(--radius-md)", cursor: "pointer", background: "var(--bg-card)", transition: "all .15s" }}>
-                                    <span style={{ fontSize: "1.4rem" }}>📁</span>
-                                    <span style={{ fontSize: ".78rem", fontWeight: 600, color: "var(--text-primary)" }}>Chọn ảnh</span>
-                                    <span style={{ fontSize: ".62rem", color: "var(--text-tertiary)" }}>Thư viện</span>
-                                </button>
-                            </div>
+                            <button type="button" onClick={() => fileRef.current?.click()} style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", border: "2px dashed var(--border)", borderRadius: "var(--radius-md)", cursor: "pointer", background: "var(--bg-card)", transition: "all .15s" }}>
+                                <span style={{ fontSize: "1.4rem" }}>📁</span>
+                                <span style={{ fontSize: ".78rem", fontWeight: 600, color: "var(--text-primary)" }}>Tải ảnh hóa đơn</span>
+                                <span style={{ fontSize: ".62rem", color: "var(--text-tertiary)" }}>Chọn từ thư viện · WebP ưu tiên · nén ≤40KB</span>
+                            </button>
                         )}
-                        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: "none" }} />
+
                         <input ref={fileRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
                     </div>
                 </div>
@@ -3413,7 +3406,7 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
             </div>
         </div>
         <div className="page-body">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
+            <div className="inv-create-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
                 {/* LEFT: Form */}
                 <div>
                     {/* Date + Payment */}
@@ -3459,12 +3452,12 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
                             </button>
                         </div>
                         <div className="card-body" style={{ padding: "0 16px 14px" }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "26px 1fr 64px 52px 1fr auto", gap: 6, padding: "8px 0 6px", fontSize: ".58rem", fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: ".5px", borderBottom: "2px solid var(--border)" }}>
+                            <div className="inv-item-header" style={{ display: "grid", gridTemplateColumns: "26px 1fr 64px 52px 1fr auto", gap: 6, padding: "8px 0 6px", fontSize: ".58rem", fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: ".5px", borderBottom: "2px solid var(--border)" }}>
                                 <span></span><span>Tên hàng hóa</span><span style={{ textAlign: "center" }}>ĐVT</span><span style={{ textAlign: "center" }}>SL</span><span>Đơn giá</span><span style={{ textAlign: "right", paddingRight: 4, minWidth: 88 }}>Thành tiền</span>
                             </div>
                             {form.items.map((it, idx) => {
                                 const lt = (it.qty || 0) * (it.price || 0); return (
-                                    <div key={idx} style={{ display: "grid", gridTemplateColumns: "26px 1fr 64px 52px 1fr auto", gap: 6, alignItems: "center", padding: "10px 0", borderBottom: idx < form.items.length - 1 ? "1px solid var(--border-light)" : "none" }}>
+                                    <div key={idx} className="inv-item-row" style={{ display: "grid", gridTemplateColumns: "26px 1fr 64px 52px 1fr auto", gap: 6, alignItems: "center", padding: "10px 0", borderBottom: idx < form.items.length - 1 ? "1px solid var(--border-light)" : "none" }}>
                                         <span style={{ fontWeight: 700, fontSize: ".66rem", color: "var(--text-tertiary)", textAlign: "center", width: 22, height: 22, borderRadius: 6, background: "var(--bg-elevated)", display: "flex", alignItems: "center", justifyContent: "center" }}>{idx + 1}</span>
                                         <input className="field-input" placeholder="Tên hàng hóa / dịch vụ" value={it.name} onChange={e => updateItem(idx, "name", e.target.value)} style={{ padding: "7px 10px", fontSize: ".83rem", margin: 0 }} />
                                         <input className="field-input" placeholder="Cái" value={it.unit} onChange={e => updateItem(idx, "unit", e.target.value)} style={{ padding: "7px 5px", fontSize: ".82rem", textAlign: "center", margin: 0 }} />
