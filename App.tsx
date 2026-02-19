@@ -962,7 +962,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-primary);
 .duplicate-warning{background:var(--yellow-light);border:1px solid rgba(229,161,14,.3);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start;animation:slideDown .3s ease-out}
 
 ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:72px;overflow-x:hidden;max-width:100vw}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{min-width:0;overflow:hidden}.page-header,.page-body{padding-left:14px;padding-right:14px;overflow-x:hidden;max-width:100%}.page-title{font-size:1.25rem}.page-subtitle{font-size:.78rem}.fab{bottom:80px;right:16px;width:50px;height:50px;font-size:22px}.balance-row{grid-template-columns:1fr}.card{min-width:0;overflow:hidden;max-width:100%}.card-header{padding:14px 16px;flex-direction:column;gap:8px}.card-body{padding:16px;overflow-x:auto}.card-title{font-size:.88rem}.tx-item{padding:12px 14px;gap:10px}.tx-icon{width:36px;height:36px;font-size:1rem}.tx-amount{font-size:.85rem}.tx-badges{display:none}.filter-bar{padding:10px 14px;gap:6px}.modal{width:min(560px,96vw)}.modal-body{padding:0 18px 20px}.modal-header{padding:18px 18px 12px}.risk-top-grid{grid-template-columns:1fr!important}.risk-stats-grid{grid-template-columns:1fr 1fr!important}.risk-flag{flex-wrap:wrap;gap:8px}.inv-grid{grid-template-columns:1fr!important}.inv-create-grid{grid-template-columns:1fr!important}.inv-item-header{display:none!important}.inv-item-row{display:flex!important;flex-direction:column!important;gap:8px!important}.inv-item-row input{width:100%!important}}
+@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:72px;overflow-x:hidden;max-width:100vw}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{min-width:0;overflow:hidden}.page-header,.page-body{padding-left:14px;padding-right:14px;overflow-x:hidden;max-width:100%}.page-title{font-size:1.25rem}.page-subtitle{font-size:.78rem}.fab{bottom:80px;right:16px;width:50px;height:50px;font-size:22px}.balance-row{grid-template-columns:1fr}.card{min-width:0;overflow:hidden;max-width:100%}.card-header{padding:14px 16px;flex-direction:column;gap:8px}.card-body{padding:16px;overflow-x:auto}.card-title{font-size:.88rem}.tx-item{padding:12px 14px;gap:10px}.tx-icon{width:36px;height:36px;font-size:1rem}.tx-amount{font-size:.85rem}.tx-badges{display:none}.filter-bar{padding:10px 14px;gap:6px}.modal{width:min(560px,96vw)}.modal-body{padding:0 18px 20px}.modal-header{padding:18px 18px 12px}.risk-top-grid{grid-template-columns:1fr!important}.risk-stats-grid{grid-template-columns:1fr 1fr!important}.risk-flag{flex-wrap:wrap;gap:8px}.inv-grid{grid-template-columns:1fr!important}.inv-create-grid{grid-template-columns:1fr!important}.inv-item-header{display:none!important}.inv-item-row{display:flex!important;flex-direction:column!important;gap:8px!important}.inv-item-row input{width:100%!important}.inv-stat-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}}
 @media(max-width:600px){html{font-size:14px}.stat-grid{grid-template-columns:1fr 1fr;gap:6px}.stat-card{padding:10px 12px}.stat-value{font-size:.95rem;word-break:break-all;overflow:hidden;text-overflow:ellipsis}.stat-label{font-size:.65rem}.stat-sub{font-size:.6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.page-title{font-size:1.15rem}.page-header{gap:8px;flex-wrap:wrap}.balance-card{padding:12px 14px;gap:10px}.balance-icon{width:36px;height:36px;font-size:1.1rem}.alert-strip{font-size:.78rem;padding:10px 14px}.filter-search{min-width:120px}.field-row{grid-template-columns:1fr}.cat-grid{grid-template-columns:repeat(3,1fr)}.card-header{flex-direction:column;align-items:flex-start;gap:6px}}
 `;
 
@@ -3309,7 +3309,7 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
             )}
 
             {/* Stat cards */}
-            <div className="fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 22 }}>
+            <div className="fade-up inv-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 22 }}>
                 {[
                     { label: "Tổng HĐ", value: invoices.length, sub: "hóa đơn", grad: "linear-gradient(135deg,#6366f1,#8b5cf6)", glow: "rgba(99,102,241,.15)" },
                     { label: "Doanh thu", value: fmtVND(totalRevenue), sub: "tất cả HĐ", grad: "linear-gradient(135deg,#10b981,#059669)", glow: "rgba(16,185,129,.15)", sm: true },
@@ -3528,7 +3528,18 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
             <div style={{ maxWidth: 680, margin: "0 auto", borderRadius: 10, overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06)" }}>
                 {renderInvoicePreview({ business: editingInv.seller ? { ...business, ...editingInv.seller, inv_logo: editingInv.seller.logo } : business, form, serial: editingInv.serial, invNumber: editingInv.number, total: editingInv.total, day: new Date(editingInv.date + "T00:00:00").getDate(), month: new Date(editingInv.date + "T00:00:00").getMonth() + 1, year: new Date(editingInv.date + "T00:00:00").getFullYear(), editingInv })}
             </div>
-            <DeleteModal />
+            {deleteConfirm && (
+                <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}><div className="modal card-glow" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+                    <div className="modal-header"><h2 className="modal-title">Xóa hóa đơn?</h2><button className="modal-close" onClick={() => setDeleteConfirm(null)}><Icons.X /></button></div>
+                    <div className="modal-body">
+                        <p style={{ fontSize: ".88rem", color: "var(--text-secondary)", marginBottom: 16 }}>Bạn có chắc muốn xóa hóa đơn <b>{deleteConfirm.serial}-{deleteConfirm.number}</b>? Thao tác này không thể hoàn tác.</p>
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <button className="btn btn-secondary" style={{ flex: 1, justifyContent: "center" }} onClick={() => setDeleteConfirm(null)}>Hủy</button>
+                            <button className="btn btn-primary" style={{ flex: 1, justifyContent: "center", background: "var(--red)", boxShadow: "0 4px 14px rgba(217,64,64,.25)" }} onClick={() => deleteInvoice(deleteConfirm)}>Xóa</button>
+                        </div>
+                    </div>
+                </div></div>
+            )}
         </div>
     </>);
     return null;
