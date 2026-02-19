@@ -962,7 +962,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-primary);
 .duplicate-warning{background:var(--yellow-light);border:1px solid rgba(229,161,14,.3);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start;animation:slideDown .3s ease-out}
 
 ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:72px;overflow-x:hidden;max-width:100vw}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{min-width:0;overflow:hidden}.page-header,.page-body{padding-left:14px;padding-right:14px;overflow-x:hidden;max-width:100%}.page-title{font-size:1.25rem}.page-subtitle{font-size:.78rem}.fab{bottom:80px;right:16px;width:50px;height:50px;font-size:22px}.balance-row{grid-template-columns:1fr}.card{min-width:0;overflow:hidden;max-width:100%}.card-header{padding:14px 16px;flex-direction:column;gap:8px}.card-body{padding:16px;overflow-x:auto}.card-title{font-size:.88rem}.tx-item{padding:12px 14px;gap:10px}.tx-icon{width:36px;height:36px;font-size:1rem}.tx-amount{font-size:.85rem}.tx-badges{display:none}.filter-bar{padding:10px 14px;gap:6px}.modal{width:min(560px,96vw)}.modal-body{padding:0 18px 20px}.modal-header{padding:18px 18px 12px}.risk-top-grid{grid-template-columns:1fr!important}.risk-stats-grid{grid-template-columns:1fr 1fr!important}.risk-flag{flex-wrap:wrap;gap:8px}}
+@media(max-width:900px){.sidebar{display:none}.main-content{margin-left:0;padding-bottom:72px;overflow-x:hidden;max-width:100vw}.mobile-nav{display:block}.stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{min-width:0;overflow:hidden}.page-header,.page-body{padding-left:14px;padding-right:14px;overflow-x:hidden;max-width:100%}.page-title{font-size:1.25rem}.page-subtitle{font-size:.78rem}.fab{bottom:80px;right:16px;width:50px;height:50px;font-size:22px}.balance-row{grid-template-columns:1fr}.card{min-width:0;overflow:hidden;max-width:100%}.card-header{padding:14px 16px;flex-direction:column;gap:8px}.card-body{padding:16px;overflow-x:auto}.card-title{font-size:.88rem}.tx-item{padding:12px 14px;gap:10px}.tx-icon{width:36px;height:36px;font-size:1rem}.tx-amount{font-size:.85rem}.tx-badges{display:none}.filter-bar{padding:10px 14px;gap:6px}.modal{width:min(560px,96vw)}.modal-body{padding:0 18px 20px}.modal-header{padding:18px 18px 12px}.risk-top-grid{grid-template-columns:1fr!important}.risk-stats-grid{grid-template-columns:1fr 1fr!important}.risk-flag{flex-wrap:wrap;gap:8px}.inv-grid{grid-template-columns:1fr!important}}
 @media(max-width:600px){html{font-size:14px}.stat-grid{grid-template-columns:1fr 1fr;gap:6px}.stat-card{padding:10px 12px}.stat-value{font-size:.95rem;word-break:break-all;overflow:hidden;text-overflow:ellipsis}.stat-label{font-size:.65rem}.stat-sub{font-size:.6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.page-title{font-size:1.15rem}.page-header{gap:8px;flex-wrap:wrap}.balance-card{padding:12px 14px;gap:10px}.balance-icon{width:36px;height:36px;font-size:1.1rem}.alert-strip{font-size:.78rem;padding:10px 14px}.filter-search{min-width:120px}.field-row{grid-template-columns:1fr}.cat-grid{grid-template-columns:repeat(3,1fr)}.card-header{flex-direction:column;align-items:flex-start;gap:6px}}
 `;
 
@@ -3031,7 +3031,7 @@ function InventoryPage({ inventory, setInventory, business, addToast }) {
 
     return (<>
         <div className="page-header"><div><h1 className="page-title">Quản lý tồn kho</h1><p className="page-subtitle">Sổ S2d-HKD — TT152/2025/TT-BTC</p></div>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button className="btn btn-secondary" onClick={() => { exportS2d(inventory, business); addToast({ type: "success", title: "Đã xuất S2d-HKD", detail: "CSV + In sổ" }) }}><Icons.Print /> In sổ S2d</button>
                 <button className="btn btn-primary" onClick={() => setShowNewItem(true)}><Icons.Plus /> Thêm hàng</button>
             </div>
@@ -3043,7 +3043,7 @@ function InventoryPage({ inventory, setInventory, business, addToast }) {
                 <div className="balance-card"><div className="balance-icon" style={{ background: "var(--blue-light)" }}>💰</div><div><div style={{ fontSize: ".72rem", color: "var(--text-tertiary)", fontWeight: 500, textTransform: "uppercase", letterSpacing: ".04em" }}>Tổng giá trị tồn</div><div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--blue)" }}>{fmtVND(totalValue)}</div></div></div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 20 }}>
+            <div className="inv-grid" style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 20 }}>
                 {/* Item list */}
                 <div className="card card-glow fade-up" style={{ alignSelf: "start" }}>
                     <div className="card-header"><span className="card-title">Hàng hóa</span></div>
