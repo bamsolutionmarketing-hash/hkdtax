@@ -1,95 +1,40 @@
 
-import React, { useState, useEffect } from 'react';
-import { BusinessConfig, Invoice } from '../types';
+import React, { useState } from 'react';
+import { BusinessConfig } from '../types';
 import { Icons } from '../constants';
-import { fmtVND, numToVietnamese, fmtDate } from '../utils';
-import { loadInvoices, saveInvoice, addTransaction } from '../lib/db';
+import { fmtVND, numToVietnamese } from '../utils';
 
 interface InvoicePageProps {
     business: BusinessConfig;
     setBusiness: React.Dispatch<React.SetStateAction<BusinessConfig>>;
+    invoices: any[];
+    setInvoices: React.Dispatch<React.SetStateAction<any[]>>;
     addToast: (t: any) => void;
-    onInvoiceCreated?: () => void;
 }
 
-const InvoicePage: React.FC<InvoicePageProps> = ({ business, setBusiness, addToast, onInvoiceCreated }) => {
+const InvoicePage: React.FC<InvoicePageProps> = ({ business, setBusiness, invoices, setInvoices, addToast }) => {
     const [view, setView] = useState<'list' | 'create'>('list');
-    const [invoices, setInvoices] = useState<Invoice[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    // Load invoices on mount
-    useEffect(() => {
-        loadInvoicesData();
-    }, []);
-
-    const loadInvoicesData = async () => {
-        setLoading(true);
-        const invs = await loadInvoices();
-        setInvoices(invs);
-        setLoading(false);
-    };
-
     const [formData, setFormData] = useState({
         buyer_name: "",
         buyer_tax_id: "",
         items: [{ name: "", qty: 1, price: 0 }]
     });
 
-    const createInv = async () => {
+    const createInv = () => {
         const total = formData.items.reduce((s, it) => s + (it.qty * it.price), 0);
-
-        // 1. Create Invoice Object
-        const newInvInput = {
-            date: new Date().toISOString().split('T')[0],
+        const newInv = {
+            id: Date.now(),
             number: String(business.inv_counter).padStart(7, '0'),
-            serial: business.inv_serial || 'C26T',
-            buyer_name: formData.buyer_name || "Khách lẻ",
-            buyer_tax_id: formData.buyer_tax_id || "",
-            total_amount: total,
-            status: 'published' as const,
-            items: formData.items.map(it => ({
-                item_name: it.name,
-                quantity: it.qty,
-                unit_price: it.price,
-                amount: it.qty * it.price
-            }))
+            serial: business.inv_serial,
+            date: new Date().toISOString().split('T')[0],
+            buyer: formData.buyer_name || "Khách lẻ",
+            total,
+            status: 'draft'
         };
-
-        // 2. Save to Supabase
-        const savedInv = await saveInvoice(newInvInput);
-        if (savedInv) {
-            setInvoices([savedInv, ...invoices]);
-            setBusiness(prev => ({ ...prev, inv_counter: (prev.inv_counter || 1) + 1 }));
-
-            // 3. Create Transaction "Thu"
-            await addTransaction({
-                type: 'income',
-                amount: total,
-                description: `Doanh thu HĐ số ${savedInv.number}`,
-                tx_date: savedInv.date,
-                category_id: '', // Will be defaulted or need to find "Doanh thu" cat
-                category_name: 'Doanh thu bán hàng', // Fallback name
-                payment_method: 'cash', // Default to cash, user can edit
-                has_invoice: true,
-                status: 'confirmed',
-                reconciled: false
-            });
-
-            addToast({ type: 'success', title: 'Đã lập hóa đơn', detail: `Số ${savedInv.number}` });
-
-            // 4. Refresh Dashboard/Transactions if needed
-            if (onInvoiceCreated) onInvoiceCreated();
-
-            setView('list');
-            // Reset form
-            setFormData({
-                buyer_name: "",
-                buyer_tax_id: "",
-                items: [{ name: "", qty: 1, price: 0 }]
-            });
-        } else {
-            addToast({ type: 'error', title: 'Lỗi lưu hóa đơn', detail: 'Không thể lưu vào cơ sở dữ liệu' });
-        }
+        setInvoices([newInv, ...invoices]);
+        setBusiness(prev => ({ ...prev, inv_counter: (prev.inv_counter || 1) + 1 }));
+        setView('list');
+        addToast({ type: 'success', title: 'Đã lập hóa đơn', detail: `Số ${newInv.number}` });
     };
 
     return (
@@ -106,33 +51,29 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ business, setBusiness, addToa
 
             {view === 'list' ? (
                 <div className="bg-white rounded-3xl border border-[#E8E4DE] shadow-sm overflow-hidden">
-                    {loading ? (
-                        <div className="p-12 text-center text-[#9B9590]">Đang tải hóa đơn...</div>
-                    ) : (
-                        <div className="divide-y divide-[#F0ECE6]">
-                            {invoices.length > 0 ? invoices.map(inv => (
-                                <div key={inv.id} className="p-6 flex items-center gap-6 hover:bg-[#FAFAF7] transition-colors">
-                                    <div className="text-[#E85D2C] font-mono font-bold text-sm bg-[#FFF0EA] px-3 py-1 rounded-lg">
-                                        {inv.serial} - {inv.number}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="font-bold text-sm truncate">{inv.buyer_name}</div>
-                                        <div className="text-[0.7rem] text-[#9B9590] mt-0.5">{fmtDate(inv.date)}</div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="font-black text-[#1A1814]">{fmtVND(inv.total_amount)}</div>
-                                        <div className="text-[0.6rem] font-black uppercase text-[#2D9F6F] mt-1 tracking-widest">Đã phát hành</div>
-                                    </div>
-                                    <button className="p-2 text-[#9B9590] hover:text-[#1A1814] transition-colors"><Icons.Download /></button>
+                    <div className="divide-y divide-[#F0ECE6]">
+                        {invoices.length > 0 ? invoices.map(inv => (
+                            <div key={inv.id} className="p-6 flex items-center gap-6 hover:bg-[#FAFAF7] transition-colors">
+                                <div className="text-[#E85D2C] font-mono font-bold text-sm bg-[#FFF0EA] px-3 py-1 rounded-lg">
+                                    {inv.serial} - {inv.number}
                                 </div>
-                            )) : (
-                                <div className="p-32 text-center text-[#9B9590] space-y-4">
-                                    <div className="text-5xl">📄</div>
-                                    <div className="font-medium">Chưa có hóa đơn nào được lập</div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-bold text-sm truncate">{inv.buyer}</div>
+                                    <div className="text-[0.7rem] text-[#9B9590] mt-0.5">{inv.date}</div>
                                 </div>
-                            )}
-                        </div>
-                    )}
+                                <div className="text-right">
+                                    <div className="font-black text-[#1A1814]">{fmtVND(inv.total)}</div>
+                                    <div className="text-[0.6rem] font-black uppercase text-[#2D9F6F] mt-1 tracking-widest">Đã phát hành</div>
+                                </div>
+                                <button className="p-2 text-[#9B9590] hover:text-[#1A1814] transition-colors"><Icons.Download /></button>
+                            </div>
+                        )) : (
+                            <div className="p-32 text-center text-[#9B9590] space-y-4">
+                                <div className="text-5xl">📄</div>
+                                <div className="font-medium">Chưa có hóa đơn nào được lập</div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             ) : (
                 <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-[#E8E4DE] p-8 shadow-2xl space-y-8 fade-up">

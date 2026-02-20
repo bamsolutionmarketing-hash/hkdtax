@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Transaction, BusinessConfig, Category, Wallet, InventoryItem, InventoryMovement, Invoice, InvoiceItem } from '../types';
+import type { Transaction, BusinessConfig, Category, Wallet, InventoryItem, InventoryMovement } from '../types';
 
 // ─── Helper: get current user_id ─────────────────────────────────────────────
 
@@ -242,98 +242,5 @@ export async function deleteInventoryItem(id: string): Promise<boolean> {
 export async function deleteMovement(id: string): Promise<boolean> {
     const { error } = await supabase.from('inventory_movements').delete().eq('id', id);
     if (error) { console.error('deleteMovement error:', error); return false; }
-    return true;
-}
-
-// ─── Invoices ────────────────────────────────────────────────────────────────
-
-export async function loadInvoices(): Promise<Invoice[]> {
-    const { data: invoices, error: invErr } = await supabase
-        .from('invoices')
-        .select('*')
-        .order('created_at', { ascending: false });
-    if (invErr) { console.error('loadInvoices error:', invErr); return []; }
-
-    const invoiceIds = invoices?.map((i: any) => i.id) || [];
-    if (invoiceIds.length === 0) return [];
-
-    const { data: items, error: itemsErr } = await supabase
-        .from('invoice_items')
-        .select('*')
-        .in('invoice_id', invoiceIds);
-    if (itemsErr) { console.error('loadInvoiceItems error:', itemsErr); }
-
-    const itemsByInvoice: Record<string, InvoiceItem[]> = {};
-    (items || []).forEach((item: any) => {
-        if (!itemsByInvoice[item.invoice_id]) itemsByInvoice[item.invoice_id] = [];
-        itemsByInvoice[item.invoice_id].push({
-            id: item.id,
-            item_name: item.item_name,
-            quantity: Number(item.quantity),
-            unit_price: Number(item.unit_price),
-            amount: Number(item.amount),
-        });
-    });
-
-    return (invoices || []).map((inv: any) => ({
-        id: inv.id,
-        date: inv.date,
-        number: inv.number,
-        serial: inv.serial,
-        buyer_name: inv.buyer_name,
-        buyer_tax_id: inv.buyer_tax_id,
-        total_amount: Number(inv.total_amount),
-        status: inv.status,
-        items: itemsByInvoice[inv.id] || [],
-    }));
-}
-
-export async function saveInvoice(invoice: Omit<Invoice, 'id' | 'items'> & { items: Omit<InvoiceItem, 'id' | 'invoice_id'>[] }): Promise<Invoice | null> {
-    const userId = await getUserId();
-
-    // 1. Insert Invoice
-    const { data: invData, error: invErr } = await supabase
-        .from('invoices')
-        .insert({
-            user_id: userId,
-            date: invoice.date,
-            number: invoice.number,
-            serial: invoice.serial,
-            buyer_name: invoice.buyer_name,
-            buyer_tax_id: invoice.buyer_tax_id,
-            total_amount: invoice.total_amount,
-            status: invoice.status,
-        })
-        .select()
-        .single();
-
-    if (invErr) { console.error('saveInvoice error:', invErr); return null; }
-    const newInvoice = invData as Invoice;
-
-    // 2. Insert Items
-    const itemsToInsert = invoice.items.map(item => ({
-        invoice_id: newInvoice.id,
-        item_name: item.item_name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        amount: item.amount,
-    }));
-
-    const { data: itemsData, error: itemsErr } = await supabase
-        .from('invoice_items')
-        .insert(itemsToInsert)
-        .select();
-
-    if (itemsErr) { console.error('saveInvoice items error:', itemsErr); }
-
-    return {
-        ...newInvoice,
-        items: itemsData as InvoiceItem[]
-    };
-}
-
-export async function deleteInvoice(id: string): Promise<boolean> {
-    const { error } = await supabase.from('invoices').delete().eq('id', id);
-    if (error) { console.error('deleteInvoice error:', error); return false; }
     return true;
 }
