@@ -3215,7 +3215,7 @@ function numToVietnamese(n) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // INVOICE PAGE — Lập hóa đơn bán hàng (Mẫu theo NĐ123/TT78)
 // ═══════════════════════════════════════════════════════════════════════════════
-function InvoicePage({ business, setBusiness, addToast, transactions, setTransactions, categories, wallets, invoices, setInvoices }) {
+function InvoicePage({ business, setBusiness, addToast, transactions, setTransactions, categories, wallets, invoices, setInvoices, onAddInvoice, onUpdateInvoice, onDeleteInvoice }) {
     const [view, setView] = useState("list");
     const [editingInv, setEditingInv] = useState(null);
     const [searchQ, setSearchQ] = useState("");
@@ -3239,7 +3239,6 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
         if (searchQ) { const q = searchQ.toLowerCase(); return (inv.buyer_name || "").toLowerCase().includes(q) || (inv.buyer_company || "").toLowerCase().includes(q) || (inv.number || "").includes(q) }
         return true;
     });
-
     const saveInvoice = () => {
         if (!form.items.some(it => it.name && it.price > 0)) { addToast({ type: "warning", title: "Chưa có hàng hóa", detail: "Thêm ít nhất 1 dòng hàng hóa/dịch vụ" }); return }
         const inv = {
@@ -3247,11 +3246,25 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
             seller: { name: business.name, tax_id: business.tax_id, address: business.address, phone: business.inv_phone, email: business.inv_email, bank_account: business.inv_bank_account, bank_name: business.inv_bank_name, logo: business.inv_logo },
             created_at: editingInv?.created_at || new Date().toISOString(), updated_at: new Date().toISOString(), status: editingInv?.status || "draft"
         };
-        if (editingInv) { setInvoices(p => p.map(x => x.id === inv.id ? inv : x)); addToast({ type: "success", title: "Đã cập nhật", detail: `HĐ ${inv.number}` }) }
-        else { setInvoices(p => [inv, ...p]); setBusiness(prev => ({ ...prev, inv_counter: (prev.inv_counter || 1) + 1 })); addToast({ type: "success", title: "Đã tạo hóa đơn", detail: `${inv.number} — ${fmtVND(total)}` }) }
+        if (editingInv) {
+            const updated = { ...inv };
+            setInvoices(p => p.map(x => x.id === inv.id ? updated : x));
+            onUpdateInvoice(updated);
+            addToast({ type: "success", title: "Đã cập nhật", detail: `HĐ ${inv.number}` });
+        }
+        else {
+            onAddInvoice(inv);
+            setBusiness(prev => ({ ...prev, inv_counter: (prev.inv_counter || 1) + 1 }));
+            addToast({ type: "success", title: "Đã tạo hóa đơn", detail: `${inv.number} — ${fmtVND(total)}` });
+        }
         setEditingInv(inv); setView("preview");
     };
-    const deleteInvoice = (inv) => { setInvoices(p => p.filter(x => x.id !== inv.id)); addToast({ type: "success", title: "Đã xóa", detail: `${inv.serial}-${inv.number}` }); setDeleteConfirm(null); setView("list") };
+    const deleteInvoiceHandler = (inv) => {
+        setInvoices(p => p.filter(x => x.id !== inv.id));
+        onDeleteInvoice(inv.id);
+        addToast({ type: "success", title: "Đã xóa", detail: `${inv.serial}-${inv.number}` });
+        setDeleteConfirm(null); setView("list");
+    };
 
     const printInvoice = () => {
         const el = document.getElementById("invoice-preview-print"); if (!el) return;
@@ -3290,7 +3303,7 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
     const day = d.getDate(), month = d.getMonth() + 1, year = d.getFullYear();
     const totalRevenue = invoices.reduce((s, i) => s + i.total, 0);
     const draftCount = invoices.filter(i => i.status === "draft").length;
-    const sentCount = invoices.filter(i => i.status === "sent").length;
+    const sentCount = invoices.filter(i => i.status === "published").length;
     const thisMonth = invoices.filter(i => { const id = new Date(i.date + "T00:00:00"); return id.getMonth() === new Date().getMonth() && id.getFullYear() === new Date().getFullYear() }).length;
     const pill = (active, c) => ({ padding: "6px 16px", borderRadius: 20, border: active ? `2px solid ${c}` : "2px solid var(--border)", background: active ? `${c}14` : "transparent", color: active ? c : "var(--text-tertiary)", fontWeight: active ? 700 : 500, fontSize: ".76rem", cursor: "pointer", transition: "all .2s", fontFamily: "var(--font)", display: "inline-flex", alignItems: "center", gap: 5 });
 
@@ -3336,7 +3349,7 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
                 </div>
                 <button style={pill(statusFilter === "all", "var(--accent)")} onClick={() => setStatusFilter("all")}>Tất cả <b style={{ fontFamily: "var(--font-mono)", fontSize: ".66rem" }}>{invoices.length}</b></button>
                 <button style={pill(statusFilter === "draft", "#f59e0b")} onClick={() => setStatusFilter("draft")}>Nháp <b style={{ fontFamily: "var(--font-mono)", fontSize: ".66rem" }}>{draftCount}</b></button>
-                <button style={pill(statusFilter === "sent", "#10b981")} onClick={() => setStatusFilter("sent")}>Đã gửi <b style={{ fontFamily: "var(--font-mono)", fontSize: ".66rem" }}>{sentCount}</b></button>
+                <button style={pill(statusFilter === "published", "#10b981")} onClick={() => setStatusFilter("published")}>Đã gửi <b style={{ fontFamily: "var(--font-mono)", fontSize: ".66rem" }}>{sentCount}</b></button>
             </div>
 
             {/* Quick create */}
@@ -3367,7 +3380,7 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
                             <div style={{ fontSize: ".78rem", maxWidth: 300, margin: "0 auto", lineHeight: 1.5 }}>{searchQ || statusFilter !== "all" ? "Thay đổi bộ lọc hoặc từ khóa" : "Nhấn \"Lập hóa đơn\" để bắt đầu"}</div>
                         </div>
                     ) : filtered.map((inv, i) => {
-                        const isSent = inv.status === "sent";
+                        const isSent = inv.status === "published";
                         return (
                             <div key={inv.id} className="fade-up" style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px", marginBottom: 3, borderRadius: 12, cursor: "pointer", transition: "all .2s ease", border: "1px solid transparent", animationDelay: `${i * .025}s` }}
                                 onClick={() => previewInv(inv)} onMouseOver={e => { e.currentTarget.style.background = "var(--bg-elevated)"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,.04)" }} onMouseOut={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "" }}>
@@ -3519,8 +3532,11 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
                 <button className="btn btn-secondary" onClick={printInvoice} style={{ gap: 6 }}><Icons.Print /> In</button>
                 <button className="btn btn-secondary" onClick={() => setDeleteConfirm(editingInv)} style={{ gap: 6, color: "var(--red)", borderColor: "rgba(239,68,68,.3)" }}><Icons.Trash /> Xóa</button>
                 {editingInv.status === "draft" && <button className="btn btn-primary" style={{ gap: 6, background: "linear-gradient(135deg,#10b981,#059669)", boxShadow: "0 4px 14px rgba(16,185,129,.25)" }} onClick={() => {
-                    setInvoices(p => p.map(x => x.id === editingInv.id ? { ...x, status: "sent" } : x));
-                    setEditingInv(prev => ({ ...prev, status: "sent" })); addToast({ type: "success", title: "Đã đánh dấu gửi" });
+                    const updated = { ...editingInv, status: "published" };
+                    setInvoices(p => p.map(x => x.id === editingInv.id ? updated : x));
+                    setEditingInv(updated);
+                    onUpdateInvoice(updated);
+                    addToast({ type: "success", title: "Đã đánh dấu gửi" });
                 }}><Icons.Check /> Đánh dấu đã gửi</button>}
             </div>
         </div>
@@ -3535,7 +3551,7 @@ function InvoicePage({ business, setBusiness, addToast, transactions, setTransac
                         <p style={{ fontSize: ".88rem", color: "var(--text-secondary)", marginBottom: 16 }}>Bạn có chắc muốn xóa hóa đơn <b>{deleteConfirm.serial}-{deleteConfirm.number}</b>? Thao tác này không thể hoàn tác.</p>
                         <div style={{ display: "flex", gap: 10 }}>
                             <button className="btn btn-secondary" style={{ flex: 1, justifyContent: "center" }} onClick={() => setDeleteConfirm(null)}>Hủy</button>
-                            <button className="btn btn-primary" style={{ flex: 1, justifyContent: "center", background: "var(--red)", boxShadow: "0 4px 14px rgba(217,64,64,.25)" }} onClick={() => deleteInvoice(deleteConfirm)}>Xóa</button>
+                            <button className="btn btn-primary" style={{ flex: 1, justifyContent: "center", background: "var(--red)", boxShadow: "0 4px 14px rgba(217,64,64,.25)" }} onClick={() => deleteInvoiceHandler(deleteConfirm)}>Xóa</button>
                         </div>
                     </div>
                 </div></div>
@@ -5247,6 +5263,25 @@ export default function App() {
         deleteTransaction(id);
     }, []);
 
+    const handleAddInvoice = useCallback(async (inv) => {
+        setInvoices(prev => [inv, ...prev]);
+        const { addInvoice } = await import('./lib/db');
+        const saved = await addInvoice(inv);
+        if (saved) setInvoices(prev => prev.map(i => i.id === inv.id ? saved : i));
+    }, []);
+
+    const handleUpdateInvoice = useCallback(async (updated) => {
+        setInvoices(prev => prev.map(i => i.id === updated.id ? updated : i));
+        const { updateInvoice } = await import('./lib/db');
+        updateInvoice(updated);
+    }, []);
+
+    const handleDeleteInvoice = useCallback(async (id) => {
+        setInvoices(prev => prev.filter(i => i.id !== id));
+        const { deleteInvoice } = await import('./lib/db');
+        deleteInvoice(id);
+    }, []);
+
     // Navigation handler — supports optional filter payload
     const handleNavigate = (targetPage, opts) => {
         if (opts?.riskFilter) {
@@ -5282,7 +5317,7 @@ export default function App() {
             {page === "reconcile" && <ReconcilePage transactions={transactions} setTransactions={setTransactions} bankEntries={MOCK_BANK_ENTRIES} addToast={addToast} wallets={wallets} categories={categories} business={business} />}
             {page === "tax" && <TaxPreview transactions={transactions} business={business} addToast={addToast} inventory={inventory} categories={categories} />}
             {page === "risk" && <RiskAudit transactions={transactions} onNavigate={handleNavigate} addToast={addToast} business={business} />}
-            {page === "invoice" && <InvoicePage business={business} setBusiness={saveBiz} addToast={addToast} transactions={transactions} setTransactions={setTransactions} categories={categories} wallets={wallets} invoices={invoices} setInvoices={setInvoices} />}
+            {page === "invoice" && <InvoicePage business={business} setBusiness={saveBiz} addToast={addToast} transactions={transactions} setTransactions={setTransactions} categories={categories} wallets={wallets} invoices={invoices} setInvoices={setInvoices} onAddInvoice={handleAddInvoice} onUpdateInvoice={handleUpdateInvoice} onDeleteInvoice={handleDeleteInvoice} />}
             {page === "setup" && <SetupPage categories={categories} setCategories={setCategories} wallets={wallets} setWallets={setWallets} addToast={addToast} transactions={transactions} inventory={inventory} business={business} setTransactions={setTransactions} setInventory={setInventory} setBusiness={saveBiz} invoices={invoices} setInvoices={setInvoices} />}
             {page === "settings" && <SettingsPage business={business} onUpdate={saveBiz} addToast={addToast} />}
             {page === "cashbook" && <CashBookPage transactions={transactions} business={business} addToast={addToast} wallets={wallets} />}

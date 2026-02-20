@@ -338,3 +338,80 @@ export async function addInvoice(inv: any): Promise<any | null> {
     };
 }
 
+export async function updateInvoice(inv: any): Promise<boolean> {
+    // 1. Update invoice
+    const { error: invoiceError } = await supabase
+        .from('invoices')
+        .update({
+            date: inv.date,
+            number: inv.number,
+            serial: inv.serial,
+            buyer_name: inv.buyer,
+            buyer_tax_id: inv.buyer_tax_id,
+            buyer_company: inv.buyer_company || '',
+            buyer_address: inv.buyer_address || '',
+            payment_method: inv.payment_method || 'TM/CK',
+            total_amount: inv.total,
+            status: inv.status,
+            note: inv.note || '',
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', inv.id);
+
+    if (invoiceError) {
+        console.error('updateInvoice error:', invoiceError);
+        return false;
+    }
+
+    // 2. Refresh items (Delete then Insert)
+    // First delete existing items
+    const { error: deleteError } = await supabase
+        .from('invoice_items')
+        .delete()
+        .eq('invoice_id', inv.id);
+
+    if (deleteError) {
+        console.error('updateInvoice delete items error:', deleteError);
+        return false;
+    }
+
+    // Then insert new items
+    if (inv.items && inv.items.length > 0) {
+        const itemsToInsert = inv.items.map((it: any) => ({
+            invoice_id: inv.id,
+            item_name: it.name,
+            quantity: it.qty,
+            unit_price: it.price,
+            amount: it.qty * it.price,
+            unit: it.unit || 'cái'
+        }));
+
+        const { error: itemsError } = await supabase
+            .from('invoice_items')
+            .insert(itemsToInsert);
+
+        if (itemsError) {
+            console.error('updateInvoice insert items error:', itemsError);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+export async function deleteInvoice(id: string): Promise<boolean> {
+    // invoice_items should be deleted automatically if CASCADE is set, 
+    // but just in case or if not set:
+    await supabase.from('invoice_items').delete().eq('invoice_id', id);
+
+    const { error } = await supabase
+        .from('invoices')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        console.error('deleteInvoice error:', error);
+        return false;
+    }
+    return true;
+}
