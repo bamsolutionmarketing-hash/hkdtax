@@ -239,8 +239,102 @@ export async function deleteInventoryItem(id: string): Promise<boolean> {
     return true;
 }
 
-export async function deleteMovement(id: string): Promise<boolean> {
-    const { error } = await supabase.from('inventory_movements').delete().eq('id', id);
-    if (error) { console.error('deleteMovement error:', error); return false; }
-    return true;
+
+// ─── Invoices ────────────────────────────────────────────────────────────────
+
+export async function loadInvoices(): Promise<any[]> {
+    const { data: invoices, error } = await supabase
+        .from('invoices')
+        .select(`
+            *,
+            items:invoice_items(*)
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('loadInvoices error:', error);
+        return [];
+    }
+
+    // Map to frontend structure
+    return (invoices || []).map((inv: any) => ({
+        id: inv.id,
+        number: inv.number,
+        serial: inv.serial,
+        date: inv.date,
+        buyer: inv.buyer_name, // Map buyer_name to buyer for frontend compatibility
+        buyer_tax_id: inv.buyer_tax_id,
+        buyer_address: inv.buyer_address,
+        buyer_company: inv.buyer_company,
+        payment_method: inv.payment_method,
+        total: Number(inv.total_amount),
+        status: inv.status,
+        note: inv.note,
+        items: (inv.items || []).map((it: any) => ({
+            name: it.item_name,
+            qty: Number(it.quantity),
+            price: Number(it.unit_price),
+            unit: it.unit
+        })),
+        created_at: inv.created_at
+    }));
 }
+
+export async function addInvoice(inv: any): Promise<any | null> {
+    const userId = await getUserId();
+
+    // 1. Insert invoice
+    const { data: invoiceData, error: invoiceError } = await supabase
+        .from('invoices')
+        .insert({
+            user_id: userId,
+            date: inv.date,
+            number: inv.number,
+            serial: inv.serial,
+            buyer_name: inv.buyer, // Map buyer to buyer_name
+            buyer_tax_id: inv.buyer_tax_id,
+            buyer_company: inv.buyer_company || '',
+            buyer_address: inv.buyer_address || '',
+            payment_method: inv.payment_method || 'TM/CK',
+            total_amount: inv.total,
+            status: inv.status,
+            note: inv.note || ''
+        })
+        .select()
+        .single();
+
+    if (invoiceError) {
+        console.error('addInvoice error:', invoiceError);
+        return null;
+    }
+
+    if (!invoiceData) return null;
+
+    // 2. Insert items
+    if (inv.items && inv.items.length > 0) {
+        const itemsToInsert = inv.items.map((it: any) => ({
+            invoice_id: invoiceData.id,
+            item_name: it.name,
+            quantity: it.qty,
+            unit_price: it.price,
+            amount: it.qty * it.price,
+            unit: it.unit || 'cái'
+        }));
+
+        const { error: itemsError } = await supabase
+            .from('invoice_items')
+            .insert(itemsToInsert);
+
+        if (itemsError) {
+            console.error('addInvoice items error:', itemsError);
+        }
+    }
+
+    // Return the complete object in frontend format
+    return {
+        ...inv,
+        id: invoiceData.id, // Use the real DB ID
+        created_at: invoiceData.created_at
+    };
+}
+

@@ -5187,15 +5187,16 @@ export default function App() {
         let cancelled = false;
         async function load() {
             try {
-                const { loadBusinessConfig, loadCategories, loadWallets, loadTransactions, loadInventory, seedDefaultsForUser } = await import('./lib/db');
+                const { loadBusinessConfig, loadCategories, loadWallets, loadTransactions, loadInventory, loadInvoices, seedDefaultsForUser } = await import('./lib/db');
                 // Seed defaults for new users
                 await seedDefaultsForUser(session.user.id);
-                const [bizData, catsData, walletsData, txData, invData] = await Promise.all([
+                const [bizData, catsData, walletsData, txData, invData, invoicesData] = await Promise.all([
                     loadBusinessConfig(),
                     loadCategories(),
                     loadWallets(),
                     loadTransactions(),
                     loadInventory(),
+                    loadInvoices(),
                 ]);
                 if (cancelled) return;
                 if (bizData) {
@@ -5208,6 +5209,7 @@ export default function App() {
                 if (walletsData && walletsData.length > 0) setWallets(walletsData);
                 if (txData) setTransactions(txData);
                 if (invData) setInventory(invData);
+                if (invoicesData) setInvoices(invoicesData);
             } catch (err) {
                 console.error('Failed to load from Supabase:', err);
             } finally {

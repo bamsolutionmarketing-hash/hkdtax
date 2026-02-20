@@ -20,21 +20,40 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ business, setBusiness, invoic
         items: [{ name: "", qty: 1, price: 0 }]
     });
 
-    const createInv = () => {
+    const createInv = async () => {
         const total = formData.items.reduce((s, it) => s + (it.qty * it.price), 0);
-        const newInv = {
-            id: Date.now(),
+        const invPayload = {
             number: String(business.inv_counter).padStart(7, '0'),
             serial: business.inv_serial,
             date: new Date().toISOString().split('T')[0],
             buyer: formData.buyer_name || "Khách lẻ",
+            buyer_tax_id: formData.buyer_tax_id,
             total,
-            status: 'draft'
+            status: 'draft',
+            items: formData.items
         };
-        setInvoices([newInv, ...invoices]);
-        setBusiness(prev => ({ ...prev, inv_counter: (prev.inv_counter || 1) + 1 }));
-        setView('list');
-        addToast({ type: 'success', title: 'Đã lập hóa đơn', detail: `Số ${newInv.number}` });
+
+        try {
+            const { addInvoice, saveBusinessConfig } = await import('../lib/db');
+            const savedInv = await addInvoice(invPayload);
+
+            if (savedInv) {
+                setInvoices([savedInv, ...invoices]);
+                const newCounter = (business.inv_counter || 1) + 1;
+                setBusiness(prev => ({ ...prev, inv_counter: newCounter }));
+                saveBusinessConfig({ inv_counter: newCounter });
+
+                setView('list');
+                addToast({ type: 'success', title: 'Đã lập hóa đơn', detail: `Số ${savedInv.number}` });
+                // Reset form
+                setFormData({ buyer_name: "", buyer_tax_id: "", items: [{ name: "", qty: 1, price: 0 }] });
+            } else {
+                addToast({ type: 'error', title: 'Lỗi', detail: 'Không thể lưu hóa đơn' });
+            }
+        } catch (e) {
+            console.error(e);
+            addToast({ type: 'error', title: 'Lỗi', detail: 'Lỗi hệ thống khi lưu' });
+        }
     };
 
     return (
