@@ -71,3 +71,25 @@ export interface InventoryMovement {
   qty: number;
   price: number;
 }
+
+export interface Invoice {
+  id: string;
+  user_id?: string;
+  date: string;
+  number: string;
+  serial: string;
+  buyer_name: string;
+  buyer_tax_id: string;
+  total_amount: number;
+  status: 'draft' | 'published' | 'void';
+  items?: InvoiceItem[];
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id?: string;
+  item_name: string;
+  quantity: number;
+  unit_price: number;
+  amount: number;
+}
